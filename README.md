@@ -182,6 +182,11 @@ Reference: https://supabase.com/docs/guides/local-development/cli-workflows?quer
 > so `db diff` reports "No schema changes found" and silently drops them.
 > Always edit the schema files, then diff.
 
+```bash
+# reset without seed
+pnpm supabase db reset --no-seed
+```
+
 #### Verify migrations
 
 ```bash
@@ -382,6 +387,60 @@ export const config = {
   ],
 }
 ```
+
+## Login with Google
+
+Get the **Client ID** and **Client Secret** from [Google Cloud Platform](https://console.cloud.google.com/apis/credentials) by creating OAuth credentials
+
+### (GCP) API Restrictions
+
+1. Go to https://console.cloud.google.com
+2. Select project or organization
+3. Select **APIs & Services**
+4. Select **Credentials**
+5. Select an item under **OAuth 2.0 Client IDs** (i.e. `auth`) - Create one if none via `+ Create credentials` button
+
+_DO NOT FORGET_ to press the **Save** button at the bottom part of the page.
+
+![](./docs/images/gcp_credentials.png)
+
+Update **Authorized JavaScript Origins** and **Authorized redirect URIs** (Reference: [Project Setup](https://supabase.com/docs/guides/auth/social-login/auth-google#project-setup))
+
+![](./docs/images/gcp_credentials_client.png)
+
+### Update Supabase's `config.toml`
+
+```toml
+[auth.external.google]
+enabled = true
+client_id = "env(SUPABASE_AUTH_EXTERNAL_GOOGLE_CLIENT_ID)"
+secret = "env(SUPABASE_AUTH_EXTERNAL_GOOGLE_CLIENT_SECRET)"
+skip_nonce_check = false
+```
+
+Add new environment variables:
+
+```properties
+# Google OAuth (See Supabase config.toml — [auth.external.google])
+SUPABASE_AUTH_EXTERNAL_GOOGLE_CLIENT_ID=
+SUPABASE_AUTH_EXTERNAL_GOOGLE_CLIENT_SECRET=
+```
+
+Also, update site and redirect urls:
+
+```toml
+[auth]
+site_url = "http://127.0.0.1:7000"
+additional_redirect_urls = ["http://127.0.0.1:7000", "http://localhost:7000", "http://127.0.0.1:7000/**", "http://localhost:7000/**"]
+```
+
+### Signing-in users
+
+1. Create [`app/auth/callback/route.ts`](./src/app/auth/callback/route.ts)
+2. See [`sign-in-google.tsx`](./src/components/sign-in-google.tsx)
+3. See [`sign-out.tsx`](./src/components/sign-out.tsx)
+
+To get authenticated user details, see [`supabase-demo-google.tsx`](./src/components/supabase-demo-google.tsx#8)
 
 ## Getting Started
 

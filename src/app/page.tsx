@@ -1,4 +1,5 @@
 import SupabaseDemo from "@/components/SupabaseDemo"
+import SupabaseDemoGoogle from "@/components/supabase-demo-google"
 import { Button } from "@/components/ui/button"
 import Image from "next/image"
 
@@ -70,6 +71,7 @@ export default function Home() {
           </Button>
         </div>
 
+        <SupabaseDemoGoogle />
         <SupabaseDemo />
       </main>
     </div>
