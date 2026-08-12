@@ -5,7 +5,9 @@
   "scripts": {
     "dev": "next dev -p 7000",
     "build": "next build",
-    "start": "next start"
+    "start": "next start",
+    "format": "oxfmt src/",
+    "prepare": "husky"
   },
   "dependencies": {
     "next": "16.3.0",
@@ -17,8 +19,19 @@
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "husky": "^9.1.7",
+    "lint-staged": "^17.3.0",
+    "oxfmt": "^0.63.0",
+    "picocolors": "^1.1.1",
     "tailwindcss": "^4",
     "typescript": "^5"
+  },
+  "lint-staged": {
+    "**/*": "oxfmt --no-error-on-unmatched-pattern"
+  },
+  "engines": {
+    "node": ">=24.10.0 <27.0.0",
+    "pnpm": ">=11.2.2 <12"
   },
   "packageManager": "pnpm@11.6.0"
 }
