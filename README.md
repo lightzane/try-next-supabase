@@ -15,6 +15,12 @@ pnpm create next-app@latest
 ✔ Would you like to include AGENTS.md to guide coding agents to write up-to-date Next.js code? … No / Yes
 ```
 
+## shadcn
+
+```bash
+pnpm dlx shadcn@latest init --preset b5KbClJIu --base radix --template next --pointer
+```
+
 ## Getting Started
 
 First, run the development server:
