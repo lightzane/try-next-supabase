@@ -52,6 +52,57 @@ Prerequisite:
 pnpm supabase start
 ```
 
+Result
+
+```bash
+Starting containers...
+Waiting for health checks...
+Started supabase local development setup.
+
+╭──────────────────────────────────────╮
+│ 🔧 Development Tools                 │
+├─────────┬────────────────────────────┤
+│ Studio  │ http://127.0.0.1:54323     │
+│ Mailpit │ http://127.0.0.1:54324     │
+│ MCP     │ http://127.0.0.1:54321/mcp │
+╰─────────┴────────────────────────────╯
+
+╭──────────────────────────────────────────────────────╮
+│ 🌐 APIs                                              │
+├────────────────┬─────────────────────────────────────┤
+│ Project URL    │ http://127.0.0.1:54321              │
+│ REST           │ http://127.0.0.1:54321/rest/v1      │
+│ GraphQL        │ http://127.0.0.1:54321/graphql/v1   │
+│ Edge Functions │ http://127.0.0.1:54321/functions/v1 │
+╰────────────────┴─────────────────────────────────────╯
+
+╭───────────────────────────────────────────────────────────────╮
+│ ⛁ Database                                                    │
+├─────┬─────────────────────────────────────────────────────────┤
+│ URL │ postgresql://postgres:postgres@127.0.0.1:54322/postgres │
+╰─────┴─────────────────────────────────────────────────────────╯
+
+╭──────────────────────────────────────────────────────────────╮
+│ 🔑 Authentication Keys                                       │
+├─────────────┬────────────────────────────────────────────────┤
+│ Publishable │ *****************************************      │
+│ Secret      │ *****************************************      │
+╰─────────────┴────────────────────────────────────────────────╯
+
+╭───────────────────────────────────────────────────────────────────────────────╮
+│ 📦 Storage (S3)                                                               │
+├────────────┬──────────────────────────────────────────────────────────────────┤
+│ URL        │ http://127.0.0.1:54321/storage/v1/s3                             │
+│ Access Key │ 625729a08b95bf1b7ff351a663f3a23c                                 │
+│ Secret Key │ 850181e4652dd023b7a98c58ae0d2d34bd487ee0cc3254aed6eda37307425907 │
+│ Region     │ local                                                            │
+╰────────────┴──────────────────────────────────────────────────────────────────╯
+Local dev security notice
+All services bind to 0.0.0.0 (network-accessible, not just localhost)
+API keys and JWT secrets are shared defaults. Do not use in production
+Studio, pgMeta (/pg/*), and analytics have no authentication
+```
+
 To stop
 
 ```bash
@@ -135,6 +186,194 @@ Reference: https://supabase.com/docs/guides/local-development/cli-workflows?quer
 
 ```bash
 pnpm supabase db reset
+```
+
+## Create Supabase Client for SSR
+
+> This step may be pre-configured already with: `pnpm create next-app@latest -e with-supabase`
+
+Reference: https://supabase.com/docs/guides/auth/server-side/creating-a-client?queryGroups=package-manager&package-manager=npm&queryGroups=framework&framework=nextjs&queryGroups=environment&environment=server
+
+### Install dependencies
+
+```bash
+pnpm add @supabase/supabase-js @supabase/ssr
+```
+
+### Set Environment Variables
+
+Check local Supabase Studio: http://127.0.0.1:54323 to get the API details
+
+This information is taken after running `pnpm supabase start`
+
+```properties
+NEXT_PUBLIC_SUPABASE_URL=supabase_project_url
+NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=supabase_publishable_key
+```
+
+### Write Utility functions
+
+Reference: https://supabase.com/docs/guides/auth/server-side/creating-a-client?queryGroups=package-manager&package-manager=pnpm&queryGroups=framework&framework=nextjs&queryGroups=environment&environment=server#write-utility-functions-to-create-supabase-clients
+
+To access Supabase from a Next.js app, you need 2 types of Supabase clients:
+
+1. **Client Component client** - To access Supabase from Client Components, which run in the browser.
+2. **Server Component client** - To access Supabase from Server Components, Server Actions, and Route Handlers, which run only on the server.
+
+[`lib/supabase/client.ts`](./src/lib/supabase/client.ts)
+
+```ts
+import { createBrowserClient } from "@supabase/ssr"
+
+export function createClient() {
+  return createBrowserClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!
+  )
+}
+```
+
+[`lib/supabase/server.ts`](./src/lib/supabase/server.ts)
+
+```ts
+import { createServerClient } from "@supabase/ssr"
+import { cookies } from "next/headers"
+
+export async function createClient() {
+  const cookieStore = await cookies()
+
+  return createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!,
+    {
+      cookies: {
+        getAll() {
+          return cookieStore.getAll()
+        },
+        setAll(cookiesToSet, _headers) {
+          try {
+            cookiesToSet.forEach(({ name, value, options }) =>
+              cookieStore.set(name, value, options)
+            )
+          } catch {
+            // The `setAll` method was called from a Server Component.
+            // This can be ignored if you have middleware refreshing
+            // user sessions.
+          }
+        },
+      },
+    }
+  )
+}
+```
+
+### Hook up proxy
+
+Since Next.js Server Components can't write cookies, you need a [Proxy](https://nextjs.org/docs/app/getting-started/proxy) to refresh expired Auth tokens and store them.
+
+References:
+
+- [Hook up proxy](https://supabase.com/docs/guides/auth/server-side/creating-a-client?queryGroups=package-manager&package-manager=pnpm&queryGroups=framework&framework=nextjs&queryGroups=environment&environment=server#hook-up-proxy)
+- [matcher](https://nextjs.org/docs/app/api-reference/file-conventions/proxy#matcher) - so the Proxy doesn't run on routes that don't access Supabase.
+
+[`lib/supabase/proxy.ts`](./src/lib/supabase/proxy.ts)
+
+```ts
+import { createServerClient } from "@supabase/ssr"
+import { NextRequest, NextResponse } from "next/server"
+
+export async function updateSession(request: NextRequest) {
+  let supabaseResponse = NextResponse.next({
+    request,
+  })
+
+  // With Fluid compute, don't put this client in a global environment
+  // variable. Always create a new one on each request.
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!,
+    {
+      cookies: {
+        getAll() {
+          return request.cookies.getAll()
+        },
+        setAll(cookiesToSet, headers) {
+          cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value))
+
+          supabaseResponse = NextResponse.next({
+            request,
+          })
+
+          cookiesToSet.forEach(({ name, value, options }) =>
+            supabaseResponse.cookies.set(name, value, options)
+          )
+
+          Object.entries(headers).forEach(([key, value]) =>
+            supabaseResponse.headers.set(key, value)
+          )
+        },
+      },
+    }
+  )
+
+  // Do not run code between createServerClient and
+  // supabase.auth.getClaims(). A simple mistake could make it very hard to debug
+  // issues with users being randomly logged out.
+  // IMPORTANT: If you remove getClaims() and you use server-side rendering
+  // with the Supabase client, your users may be randomly logged out.
+  const { data } = await supabase.auth.getClaims()
+
+  const user = data?.claims
+
+  if (
+    !user &&
+    !request.nextUrl.pathname.startsWith("/login") &&
+    !request.nextUrl.pathname.startsWith("/auth")
+  ) {
+    // no user, potentially responed by redirecting the user to login page
+    const url = request.nextUrl.clone()
+    url.pathname = "/login"
+    return NextResponse.redirect(url)
+  }
+
+  // IMPORTANT: You *must* return the supabaseResponse object as it is. If you're
+  // creating a new response object with NextResponse.next() make sure to:
+  // 1. Pass the request in it, like so:
+  //    const myNewResponse = NextResponse.next({ request })
+  // 2. Copy over the cookies, like so:
+  //    myNewResponse.cookies.setAll(supabaseResponse.cookies.getAll())
+  // 3. Change the myNewResponse object to fit your needs, but avoid changing
+  //    the cookies!
+  // 4. Finally:
+  //    return myNewResponse
+  // If this is not done, you may be causing the browser and server to go out
+  // of sync and terminate the user's session prematurely!
+  return supabaseResponse
+}
+```
+
+[`proxy.ts`](./src/proxy.ts)
+
+```ts
+import { updateSession } from "@/lib/supabase/proxy"
+import { NextRequest } from "next/server"
+
+export async function proxy(request: NextRequest) {
+  return await updateSession(request)
+}
+
+export const config = {
+  matcher: [
+    /*
+     * Match all request paths except for the ones starting with:
+     * - _next/static (static files)
+     * - _next/image (image optimization files)
+     * - favicon.ico (favicon file)
+     * Feel free to modify this pattern to include more paths.
+     */
+    "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
+  ],
+}
 ```
 
 ## Getting Started
