@@ -328,7 +328,14 @@ export async function updateSession(request: NextRequest) {
   if (
     !user &&
     !request.nextUrl.pathname.startsWith("/login") &&
-    !request.nextUrl.pathname.startsWith("/auth")
+    !request.nextUrl.pathname.startsWith("/auth") &&
+    // Every path starts with / — every route on your site begins with a / character,
+    // including /test, /dashboard, anything. So pathname.startsWith("/") is true for literally every request,
+    // which means !request.nextUrl.pathname.startsWith("/") is always false,
+    // which makes the whole if condition always false.
+    // The redirect never fires for any route, not just /.
+    // To match only the homepage exactly, use:
+    request.nextUrl.pathname !== "/" // so it doesn't redirect to /login when visiting `/` homepage
   ) {
     // no user, potentially responed by redirecting the user to login page
     const url = request.nextUrl.clone()
