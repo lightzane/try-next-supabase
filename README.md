@@ -33,7 +33,13 @@ pnpm dlx shadcn@latest init --preset b5KbClJIu --base radix --template next --po
 pnpm add -D supabase
 ```
 
+### Initialize
+
 [Start a new project from scratch](https://supabase.com/docs/guides/local-development/cli-workflows#start-a-new-project-from-scratch)
+
+```bash
+pnpm supabase init
+```
 
 ## Getting Started
 
