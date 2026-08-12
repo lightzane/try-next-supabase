@@ -21,6 +21,20 @@ pnpm create next-app@latest
 pnpm dlx shadcn@latest init --preset b5KbClJIu --base radix --template next --pointer
 ```
 
+## Add Supabase (Local Development)
+
+### Prerequisite
+
+- Docker (or **OrbStack** for macOS)
+
+### Installation
+
+```bash
+pnpm add -D supabase
+```
+
+[Start a new project from scratch](https://supabase.com/docs/guides/local-development/cli-workflows#start-a-new-project-from-scratch)
+
 ## Getting Started
 
 First, run the development server:
