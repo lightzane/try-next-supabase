@@ -60,6 +60,13 @@ pnpm supabase stop
 
 ## Create your schema
 
+<!-- (DDL): Data Definition Language     -- CREATE/ALTER/DROP TABLE, CREATE POLICY -->
+<!-- (DML): Data Manipulation Language   -- INSERT, UPDATE, DELETE, SELECT -->
+<!-- (DCL): Data Control Language        -- GRANT, REVOKE -->
+
+> [!NOTE]
+> `supabase start` must go first before `supabase db diff -f <name>` and `supabase db reset`
+
 ### Declarative Schemas
 
 Reference: https://supabase.com/docs/guides/local-development/cli-workflows?queryGroups=schema-approach&schema-approach=declarative#step-3-create-your-schema
