@@ -11,6 +11,14 @@ CREATE TABLE public.todos (
 
 ALTER TABLE public.todos ENABLE ROW LEVEL SECURITY;
 
+GRANT SELECT
+    ON public.todos
+    TO anon, authenticated;
+
+GRANT SELECT, INSERT
+    ON public.todos
+    TO authenticated;
+
 CREATE POLICY "Users can read their own todos"
     ON public.todos FOR SELECT
     USING (auth.uid() = user_id);
