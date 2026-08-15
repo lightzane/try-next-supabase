@@ -1,478 +1,66 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+Reference: https://supabase.com/docs/guides/auth/passwords?queryGroups=flow&flow=pkce
+
+## Adding Password-Based Auth
+
+Also, this was discovered in https://supabase.com/library/docs/nextjs/password-based-auth
+which generates the entire block with ease.
 
 ```bash
-pnpm create next-app@latest
-
-✔ What is your project named? … genresort
-✔ Would you like to use the recommended Next.js defaults? › No, customize settings
-✔ Would you like to use TypeScript? … No / Yes
-✔ Which linter would you like to use? › None
-✔ Would you like to use React Compiler? … No / Yes
-✔ Would you like to use Tailwind CSS? … No / Yes
-✔ Would you like your code inside a `src/` directory? … No / Yes
-✔ Would you like to use App Router? (recommended) … No / Yes
-✔ Would you like to customize the import alias (`@/*` by default)? … No / Yes
-✔ Would you like to include AGENTS.md to guide coding agents to write up-to-date Next.js code? … No / Yes
+pnpm dlx shadcn@latest add @supabase/password-based-auth-nextjs
 ```
 
-## shadcn
+Result:
 
 ```bash
-pnpm dlx shadcn@latest init --preset b5KbClJIu --base radix --template next --pointer
+ Checking registry.
+✔ Installing dependencies.
+✔ The file button.tsx already exists. Would you like to overwrite? … no
+✔ The file client.ts already exists. Would you like to overwrite? … no
+✔ The file server.ts already exists. Would you like to overwrite? … no
+✔ Created 18 files:
+  - src/components/ui/card.tsx
+  - src/components/ui/input.tsx
+  - src/components/ui/label.tsx
+  - src/app/auth/login/page.tsx
+  - src/app/auth/error/page.tsx
+  - src/app/protected/page.tsx
+  - src/app/auth/confirm/route.ts
+  - src/components/login-form.tsx
+  - src/middleware.ts
+  - src/app/auth/sign-up/page.tsx
+  - src/app/auth/sign-up-success/page.tsx
+  - src/components/sign-up-form.tsx
+  - src/app/auth/forgot-password/page.tsx
+  - src/app/auth/update-password/page.tsx
+  - src/components/forgot-password-form.tsx
+  - src/components/update-password-form.tsx
+  - src/components/logout-button.tsx
+  - src/lib/supabase/middleware.ts
+ℹ Skipped 3 files: (files might be identical, use --overwrite to overwrite)
+  - src/components/ui/button.tsx
+  - src/lib/supabase/client.ts
+  - src/lib/supabase/server.ts
 ```
 
-## Add Supabase (Local Development)
-
-### Prerequisite
-
-- Docker Desktop (or **OrbStack** for macOS)
-
-### Installation
-
-```bash
-pnpm add -D supabase
-```
-
-### Initialize
-
-[Start a new project from scratch](https://supabase.com/docs/guides/local-development/cli-workflows#start-a-new-project-from-scratch)
-
-```bash
-pnpm supabase init
-```
-
-## Start Supabase local stack
-
-Prerequisite:
-
-- A docker instance must be opened (Docker Desktop/OrbStack)
-- Ensure Docker is running and has at least 7 GB of RAM allocated
-
-```bash
-pnpm supabase start
-```
-
-Result
-
-```bash
-Starting containers...
-Waiting for health checks...
-Started supabase local development setup.
-
-╭──────────────────────────────────────╮
-│ 🔧 Development Tools                 │
-├─────────┬────────────────────────────┤
-│ Studio  │ http://127.0.0.1:54323     │
-│ Mailpit │ http://127.0.0.1:54324     │
-│ MCP     │ http://127.0.0.1:54321/mcp │
-╰─────────┴────────────────────────────╯
-
-╭──────────────────────────────────────────────────────╮
-│ 🌐 APIs                                              │
-├────────────────┬─────────────────────────────────────┤
-│ Project URL    │ http://127.0.0.1:54321              │
-│ REST           │ http://127.0.0.1:54321/rest/v1      │
-│ GraphQL        │ http://127.0.0.1:54321/graphql/v1   │
-│ Edge Functions │ http://127.0.0.1:54321/functions/v1 │
-╰────────────────┴─────────────────────────────────────╯
-
-╭───────────────────────────────────────────────────────────────╮
-│ ⛁ Database                                                    │
-├─────┬─────────────────────────────────────────────────────────┤
-│ URL │ postgresql://postgres:postgres@127.0.0.1:54322/postgres │
-╰─────┴─────────────────────────────────────────────────────────╯
-
-╭──────────────────────────────────────────────────────────────╮
-│ 🔑 Authentication Keys                                       │
-├─────────────┬────────────────────────────────────────────────┤
-│ Publishable │ *****************************************      │
-│ Secret      │ *****************************************      │
-╰─────────────┴────────────────────────────────────────────────╯
-
-╭───────────────────────────────────────────────────────────────────────────────╮
-│ 📦 Storage (S3)                                                               │
-├────────────┬──────────────────────────────────────────────────────────────────┤
-│ URL        │ http://127.0.0.1:54321/storage/v1/s3                             │
-│ Access Key │ 625729a08b95bf1b7ff351a663f3a23c                                 │
-│ Secret Key │ 850181e4652dd023b7a98c58ae0d2d34bd487ee0cc3254aed6eda37307425907 │
-│ Region     │ local                                                            │
-╰────────────┴──────────────────────────────────────────────────────────────────╯
-Local dev security notice
-All services bind to 0.0.0.0 (network-accessible, not just localhost)
-API keys and JWT secrets are shared defaults. Do not use in production
-Studio, pgMeta (/pg/*), and analytics have no authentication
-```
-
-To stop
-
-```bash
-pnpm supabase stop
-```
-
-## Create your schema
-
-<!-- (DDL): Data Definition Language     -- CREATE/ALTER/DROP TABLE, CREATE POLICY -->
-<!-- (DML): Data Manipulation Language   -- INSERT, UPDATE, DELETE, SELECT -->
-<!-- (DCL): Data Control Language        -- GRANT, REVOKE -->
-
-> [!NOTE]
-> `supabase start` must go first before `supabase db diff -f <name>` and `supabase db reset`
-
-### Declarative Schemas
-
-Reference: https://supabase.com/docs/guides/local-development/cli-workflows?queryGroups=schema-approach&schema-approach=declarative#step-3-create-your-schema
-
-[`supabase/schemas/todos.sql`](./supabase/schemas/todos.sql)
-
-```sql
-CREATE TABLE public.todos (
-    id BIGINT GENERATED BY DEFAULT AS IDENTITY PRIMARY KEY,
-    created_at TIMESTAMPTZ DEFAULT NOW() NOT NULL,
-    title TEXT NOT NULL,
-    is_complete BOOLEAN DEFAULT false NOT NULL,
-    is_public BOOLEAN DEFAULT false NOT NULL,
-    user_id UUID REFERENCES auth.users (id) DEFAULT auth.uid() NOT NULL
-);
-
-ALTER TABLE public.todos ENABLE ROW LEVEL SECURITY;
-
-CREATE POLICY "Users can read their own todos"
-    ON public.todos FOR SELECT
-    USING (auth.uid() = user_id);
-
-CREATE POLICY "Users can create their own todos"
-    ON public.todos FOR INSERT
-    WITH CHECK (auth.uid() = user_id);
-
-CREATE POLICY "Anyone can read public todos"
-    ON public.todos FOR SELECT
-    TO anon, authenticated -- supabase roles
-    USING (is_public = true);
-```
-
-Then generate a migration from it:
-
-```bash
-pnpm supabase db diff -f initial-schema
-```
-
-### Daily workflow
-
-Reference: https://supabase.com/docs/guides/local-development/cli-workflows?queryGroups=schema-approach&schema-approach=declarative#the-daily-workflow
-
-```
-1. Edit schema file (supabase/schemas/todos.sql)
-        ↓
-2. supabase db diff -f <name>          → generates a migration
-        ↓
-3. supabase db reset                   → verify it works LOCALLY
-        ↓
-4. supabase db push                    → deploy it to your REMOTE project
-```
-
-1. Edit your schema file(s) in `supabase/schemas/` (add a table, a column, a policy, etc.)
-2. Generate a migration: `supabase db diff -f add-due-date-to-todo`
-3. Review the generated migration file. See [Cleaning up generated migrations](https://supabase.com/docs/guides/local-development/cli-workflows?queryGroups=schema-approach&schema-approach=declarative#cleaning-up-generated-migrations)
-4. Verify the full chain: `supabase db reset`
-5. Commit the schema file and the migration together
-
-> ![WARNING]
-> `db diff` compares your `supabase/schemas/` files against your existing migrations;
-> it does not read the live local database. Changes you make directly in Studio or via SQL are ignored,
-> so `db diff` reports "No schema changes found" and silently drops them.
-> Always edit the schema files, then diff.
-
-```bash
-# reset without seed
-pnpm supabase db reset --no-seed
-```
-
-#### Verify migrations
-
-```bash
-pnpm supabase db reset
-```
-
-## Create Supabase Client for SSR
-
-> This step may be pre-configured already with: `pnpm create next-app@latest -e with-supabase`
-
-Reference: https://supabase.com/docs/guides/auth/server-side/creating-a-client?queryGroups=package-manager&package-manager=npm&queryGroups=framework&framework=nextjs&queryGroups=environment&environment=server
-
-### Install dependencies
-
-```bash
-pnpm add @supabase/supabase-js @supabase/ssr
-```
-
-### Set Environment Variables
-
-Check local Supabase Studio: http://127.0.0.1:54323 to get the API details
-
-This information is taken after running `pnpm supabase start`
-
-```properties
-NEXT_PUBLIC_SUPABASE_URL=supabase_project_url
-NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=supabase_publishable_key
-```
-
-### Write Utility functions
-
-Reference: https://supabase.com/docs/guides/auth/server-side/creating-a-client?queryGroups=package-manager&package-manager=pnpm&queryGroups=framework&framework=nextjs&queryGroups=environment&environment=server#write-utility-functions-to-create-supabase-clients
-
-To access Supabase from a Next.js app, you need 2 types of Supabase clients:
-
-1. **Client Component client** - To access Supabase from Client Components, which run in the browser.
-2. **Server Component client** - To access Supabase from Server Components, Server Actions, and Route Handlers, which run only on the server.
-
-[`lib/supabase/client.ts`](./src/lib/supabase/client.ts)
-
-```ts
-import { createBrowserClient } from "@supabase/ssr"
-
-export function createClient() {
-  return createBrowserClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!
-  )
-}
-```
-
-[`lib/supabase/server.ts`](./src/lib/supabase/server.ts)
-
-```ts
-import { createServerClient } from "@supabase/ssr"
-import { cookies } from "next/headers"
-
-export async function createClient() {
-  const cookieStore = await cookies()
-
-  return createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!,
-    {
-      cookies: {
-        getAll() {
-          return cookieStore.getAll()
-        },
-        setAll(cookiesToSet, _headers) {
-          try {
-            cookiesToSet.forEach(({ name, value, options }) =>
-              cookieStore.set(name, value, options)
-            )
-          } catch {
-            // The `setAll` method was called from a Server Component.
-            // This can be ignored if you have middleware refreshing
-            // user sessions.
-          }
-        },
-      },
-    }
-  )
-}
-```
-
-### Hook up proxy
-
-Since Next.js Server Components can't write cookies, you need a [Proxy](https://nextjs.org/docs/app/getting-started/proxy) to refresh expired Auth tokens and store them.
-
-References:
-
-- [Hook up proxy](https://supabase.com/docs/guides/auth/server-side/creating-a-client?queryGroups=package-manager&package-manager=pnpm&queryGroups=framework&framework=nextjs&queryGroups=environment&environment=server#hook-up-proxy)
-- [matcher](https://nextjs.org/docs/app/api-reference/file-conventions/proxy#matcher) - so the Proxy doesn't run on routes that don't access Supabase.
-
-[`lib/supabase/proxy.ts`](./src/lib/supabase/proxy.ts)
-
-```ts
-import { createServerClient } from "@supabase/ssr"
-import { NextRequest, NextResponse } from "next/server"
-
-export async function updateSession(request: NextRequest) {
-  let supabaseResponse = NextResponse.next({
-    request,
-  })
-
-  // With Fluid compute, don't put this client in a global environment
-  // variable. Always create a new one on each request.
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!,
-    {
-      cookies: {
-        getAll() {
-          return request.cookies.getAll()
-        },
-        setAll(cookiesToSet, headers) {
-          cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value))
-
-          supabaseResponse = NextResponse.next({
-            request,
-          })
-
-          cookiesToSet.forEach(({ name, value, options }) =>
-            supabaseResponse.cookies.set(name, value, options)
-          )
-
-          Object.entries(headers).forEach(([key, value]) =>
-            supabaseResponse.headers.set(key, value)
-          )
-        },
-      },
-    }
-  )
-
-  // Do not run code between createServerClient and
-  // supabase.auth.getClaims(). A simple mistake could make it very hard to debug
-  // issues with users being randomly logged out.
-  // IMPORTANT: If you remove getClaims() and you use server-side rendering
-  // with the Supabase client, your users may be randomly logged out.
-  const { data } = await supabase.auth.getClaims()
-
-  const user = data?.claims
-
-  if (
-    !user &&
-    !request.nextUrl.pathname.startsWith("/login") &&
-    !request.nextUrl.pathname.startsWith("/auth") &&
-    // Every path starts with / — every route on your site begins with a / character,
-    // including /test, /dashboard, anything. So pathname.startsWith("/") is true for literally every request,
-    // which means !request.nextUrl.pathname.startsWith("/") is always false,
-    // which makes the whole if condition always false.
-    // The redirect never fires for any route, not just /.
-    // To match only the homepage exactly, use:
-    request.nextUrl.pathname !== "/" // so it doesn't redirect to /login when visiting `/` homepage
-  ) {
-    // no user, potentially responed by redirecting the user to login page
-    const url = request.nextUrl.clone()
-    url.pathname = "/login"
-    return NextResponse.redirect(url)
+- But I have removed auto-generated `middleware.ts`
+  as `proxy.ts` was already created and since in Next.js v16+ uses `proxy.ts`
+- I have also fixed the bug in resetting the passowrd by redirecting to `/auth/callback` before `/auth/update-password` (see [`forget-password-form.tsx`](./src/components/forgot-password-form.tsx#33))
+- Also replaced deprecated typing from ~~`React.FormEvent`~~ to `React.SubmitEvent`
+
+Note on `components.json`:
+
+```json
+{
+  "registries": {
+    "@supabase": "https://supabase.com/ui/r/{name}.json"
   }
-
-  // IMPORTANT: You *must* return the supabaseResponse object as it is. If you're
-  // creating a new response object with NextResponse.next() make sure to:
-  // 1. Pass the request in it, like so:
-  //    const myNewResponse = NextResponse.next({ request })
-  // 2. Copy over the cookies, like so:
-  //    myNewResponse.cookies.setAll(supabaseResponse.cookies.getAll())
-  // 3. Change the myNewResponse object to fit your needs, but avoid changing
-  //    the cookies!
-  // 4. Finally:
-  //    return myNewResponse
-  // If this is not done, you may be causing the browser and server to go out
-  // of sync and terminate the user's session prematurely!
-  return supabaseResponse
 }
 ```
 
-[`proxy.ts`](./src/proxy.ts)
-
-```ts
-import { updateSession } from "@/lib/supabase/proxy"
-import { NextRequest } from "next/server"
-
-export async function proxy(request: NextRequest) {
-  return await updateSession(request)
-}
-
-export const config = {
-  matcher: [
-    /*
-     * Match all request paths except for the ones starting with:
-     * - _next/static (static files)
-     * - _next/image (image optimization files)
-     * - favicon.ico (favicon file)
-     * Feel free to modify this pattern to include more paths.
-     */
-    "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
-  ],
-}
-```
-
-## Login with Google
-
-Get the **Client ID** and **Client Secret** from [Google Cloud Platform](https://console.cloud.google.com/apis/credentials) by creating OAuth credentials
-
-### (GCP) API Restrictions
-
-1. Go to https://console.cloud.google.com
-2. Select project or organization
-3. Select **APIs & Services**
-4. Select **Credentials**
-5. Select an item under **OAuth 2.0 Client IDs** (i.e. `auth`) - Create one if none via `+ Create credentials` button
-
-_DO NOT FORGET_ to press the **Save** button at the bottom part of the page.
-
-![](./docs/images/gcp_credentials.png)
-
-Update **Authorized JavaScript Origins** and **Authorized redirect URIs** (Reference: [Project Setup](https://supabase.com/docs/guides/auth/social-login/auth-google#project-setup))
-
-![](./docs/images/gcp_credentials_client.png)
-
-### Update Supabase's `config.toml`
-
-```toml
-[auth.external.google]
-enabled = true
-client_id = "env(SUPABASE_AUTH_EXTERNAL_GOOGLE_CLIENT_ID)"
-secret = "env(SUPABASE_AUTH_EXTERNAL_GOOGLE_CLIENT_SECRET)"
-skip_nonce_check = false
-```
-
-Add new environment variables:
-
-```properties
-# Google OAuth (See Supabase config.toml — [auth.external.google])
-SUPABASE_AUTH_EXTERNAL_GOOGLE_CLIENT_ID=
-SUPABASE_AUTH_EXTERNAL_GOOGLE_CLIENT_SECRET=
-```
-
-Also, update site and redirect urls:
-
-```toml
-[auth]
-site_url = "http://127.0.0.1:7000"
-additional_redirect_urls = ["http://127.0.0.1:7000", "http://localhost:7000", "http://127.0.0.1:7000/**", "http://localhost:7000/**"]
-```
-
-### Signing-in users
-
-1. Create [`app/auth/callback/route.ts`](./src/app/auth/callback/route.ts)
-2. See [`sign-in-google.tsx`](./src/components/sign-in-google.tsx)
-3. See [`sign-out.tsx`](./src/components/sign-out.tsx)
-
-To get authenticated user details, see [`supabase-demo-google.tsx`](./src/components/supabase-demo-google.tsx#8)
-
-## Getting Started
-
-First, run the development server:
+This tells the CLI: "the namespace `@supabase` resolves to Supabase's own component registry." So instead of only running npx shadcn add button, you could run something like:
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+pnpm dlx shadcn@latest add @supabase/password-based-auth-nextjs
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
-
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
-
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+and the CLI substitutes `{name}` into the URL template (`https://supabase.com/ui/r/password-based-auth-nextjs.json`), fetches that registry item's manifest (source files, dependencies, etc.), and installs it into your project using the aliases paths defined above (`@/components`, `@/lib`, etc.).
