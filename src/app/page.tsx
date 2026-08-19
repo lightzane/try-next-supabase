@@ -1,7 +1,5 @@
-import SupabaseDemo from "@/components/SupabaseDemo"
-import SupabaseDemoGoogle from "@/components/supabase-demo-google"
-import { Button } from "@/components/ui/button"
-import Image from "next/image"
+import { Button } from "@/components/ui/button";
+import Image from "next/image";
 
 export default function Home() {
   return (
@@ -70,10 +68,7 @@ export default function Home() {
             </a>
           </Button>
         </div>
-
-        <SupabaseDemoGoogle />
-        <SupabaseDemo />
       </main>
     </div>
-  )
+  );
 }
